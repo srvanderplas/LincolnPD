@@ -96,7 +96,9 @@ get_tickets <- function(case) {
   tibble(person = person, ticket = ticket)
 }
 
-days <- seq.Date(ymd("2019-01-01"), Sys.Date(), by = "day")
+days <- seq.Date(ymd("2020-01-01"), Sys.Date(), by = "day")
 
 get_reports_safely <- safely(get_reports_date)
 traffic_violations <- purrr::map(days, get_reports_safely)
+
+traffic_violations_df <- map_df(traffic_violations, "result")
