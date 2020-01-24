@@ -114,3 +114,5 @@ traffic_violations_df2 <- map_df(traffic_violations2, "result")
 traffic_violations <- bind_rows(traffic_violations_df2, traffic_violations_df)
 
 traffic_violations %>% group_by(Date) %>% count %>% ggplot(aes(x = Date, y = n)) + geom_line() + scale_y_continuous("Number of Traffic Accidents in Lincoln")
+
+write_csv(traffic_violations, "2017-present.csv")
