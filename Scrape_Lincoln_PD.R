@@ -9,6 +9,7 @@ get_reports_date <- function(date) {
   search_date <- format.Date(date, "%m-%d-%Y") %>%
     str_remove("^0")
 
+  body_str <- paste0("CGI=DISK0%3A%5B020020.WWW%5DACCDESK.COM&rky=&date=", search_date)
   res <- httr::POST(
     url = "HTTPS://CJIS.LINCOLN.NE.GOV/HTBIN/CGI.COM",
     config = httr::add_headers(.headers = c(Host="cjis.lincoln.ne.gov",
@@ -17,13 +18,13 @@ get_reports_date <- function(date) {
                                             `Accept-Language` = "en-US,en;q=0.5",
                                             `Accept-Encoding` = "gzip, deflate, br",
                                             `Content-Type` = "application/x-www-form-urlencoded",
-                                            `Content-Length` = 59,
+                                            `Content-Length` = nchar(body_str),
                                             Origin = "https://www.lincoln.ne.gov",
                                             DNT = 1,
                                             Connection = "keep-alive",
                                             Referer = "https://www.lincoln.ne.gov/city/police/stats/acc.htm",
                                             `Upgrade-Insecure-Requests` = 1)),
-    body = paste0("CGI=DISK0%3A%5B020020.WWW%5DACCDESK.COM&rky=&date=", search_date))
+    body = body_str)
 
   res_html <- read_html(res$content)
   tab <- html_node(res_html, "table")
@@ -52,6 +53,9 @@ get_reports_date <- function(date) {
 }
 
 get_tickets <- function(case) {
+
+  body_str <- paste0("CGI=DISK0%3A%5B020020.WWW%5DACCDESK.COM&TICK=+", str_trim(case), "+")
+
   res <- httr::POST(
     url = "HTTPS://CJIS.LINCOLN.NE.GOV/HTBIN/CGI.COM",
     config = httr::add_headers(.headers = c(Host="cjis.lincoln.ne.gov",
@@ -60,13 +64,13 @@ get_tickets <- function(case) {
                                             `Accept-Language` = "en-US,en;q=0.5",
                                             `Accept-Encoding` = "gzip, deflate, br",
                                             `Content-Type` = "application/x-www-form-urlencoded",
-                                            `Content-Length` = 56,
+                                            `Content-Length` = nchar(body_str),
                                             Origin = "https://www.lincoln.ne.gov",
                                             DNT = 1,
                                             Connection = "keep-alive",
                                             Referer = "https://www.lincoln.ne.gov/city/police/stats/acc.htm",
                                             `Upgrade-Insecure-Requests` = 1)),
-    body = paste0("CGI=DISK0%3A%5B020020.WWW%5DACCDESK.COM&TICK=+", str_trim(case), "+"))
+    body = body_str)
 
   get_person <- function(node) {
     node %>%
@@ -96,9 +100,17 @@ get_tickets <- function(case) {
   tibble(person = person, ticket = ticket)
 }
 
-days <- seq.Date(ymd("2020-01-01"), Sys.Date(), by = "day")
+days <- seq.Date(ymd("2017-1-1"), Sys.Date(), by = "day")
 
 get_reports_safely <- safely(get_reports_date)
 traffic_violations <- purrr::map(days, get_reports_safely)
 
 traffic_violations_df <- map_df(traffic_violations, "result")
+traffic_violations_df %>% group_by(Date) %>% count %>% ggplot(aes(x = Date, y = n)) + geom_line() + scale_y_continuous("Number of Traffic Accidents in Lincoln")
+
+traffic_violations2 <- purrr::map(seq.Date(ymd("2017-1-1", "2018-12-31"), by = "day"), get_reports_safely) %>% map_df("result")
+
+traffic_violations_df2 <- map_df(traffic_violations2, "result")
+traffic_violations <- bind_rows(traffic_violations_df2, traffic_violations_df)
+
+traffic_violations %>% group_by(Date) %>% count %>% ggplot(aes(x = Date, y = n)) + geom_line() + scale_y_continuous("Number of Traffic Accidents in Lincoln")
