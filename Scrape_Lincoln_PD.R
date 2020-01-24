@@ -100,19 +100,19 @@ get_tickets <- function(case) {
   tibble(person = person, ticket = ticket)
 }
 
-days <- seq.Date(ymd("2017-1-1"), Sys.Date(), by = "day")
-
-get_reports_safely <- safely(get_reports_date)
-traffic_violations <- purrr::map(days, get_reports_safely)
-
-traffic_violations_df <- map_df(traffic_violations, "result")
-traffic_violations_df %>% group_by(Date) %>% count %>% ggplot(aes(x = Date, y = n)) + geom_line() + scale_y_continuous("Number of Traffic Accidents in Lincoln")
-
-traffic_violations2 <- purrr::map(seq.Date(ymd("2017-1-1", "2018-12-31"), by = "day"), get_reports_safely) %>% map_df("result")
-
-traffic_violations_df2 <- map_df(traffic_violations2, "result")
-traffic_violations <- bind_rows(traffic_violations_df2, traffic_violations_df)
-
-traffic_violations %>% group_by(Date) %>% count %>% ggplot(aes(x = Date, y = n)) + geom_line() + scale_y_continuous("Number of Traffic Accidents in Lincoln")
-
-write_csv(traffic_violations, "2017-present.csv")
+# days <- seq.Date(ymd("2017-1-1"), Sys.Date(), by = "day")
+#
+# get_reports_safely <- safely(get_reports_date)
+# traffic_violations <- purrr::map(days, get_reports_safely)
+#
+# traffic_violations_df <- map_df(traffic_violations, "result")
+# traffic_violations_df %>% group_by(Date) %>% count %>% ggplot(aes(x = Date, y = n)) + geom_line() + scale_y_continuous("Number of Traffic Accidents in Lincoln")
+#
+# traffic_violations2 <- purrr::map(seq.Date(ymd("2017-1-1", "2018-12-31"), by = "day"), get_reports_safely) %>% map_df("result")
+#
+# traffic_violations_df2 <- map_df(traffic_violations2, "result")
+# traffic_violations <- bind_rows(traffic_violations_df2, traffic_violations_df)
+#
+# traffic_violations %>% group_by(Date) %>% count %>% ggplot(aes(x = Date, y = n)) + geom_line() + scale_y_continuous("Number of Traffic Accidents in Lincoln")
+#
+# write_csv(traffic_violations, "2017-present.csv")
